@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="mn">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bank App</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+      }
+
+      .container {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+        width: 500px;
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      input,
+      button {
+        padding: 10px;
+        margin: 5px 0;
+        width: 100%;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+      }
+
+      button {
+        cursor: pointer;
+        border: none;
+        color: white;
+      }
+
+      /* Login form цэнхэр болгох */
+      #loginDiv {
+        background-color: #007bff; /* цэнхэр */
+        padding: 2rem;
+        border-radius: 10px;
+        color: white; /* текст цагаан */
+        box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      #loginDiv input {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        width: 100%;
+        margin: 5px 0;
+      }
+
+      #loginDiv button {
+        background-color: #0056b3;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        width: 100%;
+      }
+
+      #loginDiv button:hover {
+        background-color: #003d80;
+      }
+
+      .deposit {
+        background-color: #28a745;
+      }
+
+      .deposit:hover {
+        background-color: #1e7e34;
+      }
+
+      .withdraw {
+        background-color: #dc3545;
+      }
+
+      .withdraw:hover {
+        background-color: #b52a37;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      th,
+      td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: center;
+      }
+
+      th {
+        background-color: #007bff;
+        color: white;
+      }
+
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      tr:hover {
+        background-color: #eef5ff;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Login Form -->
+      <div id="loginDiv">
+        <h2>Login</h2>
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button id="loginBtn">Login</button>
+        <div id="errorMsg" style="color: red; margin-top: 5px"></div>
+      </div>
+
+      <!-- Bank Table & Actions -->
+      <div id="bankDiv" class="hidden">
+        <h2>Гүйлгээний мэдээлэл</h2>
+        <div class="actions">
+          <button class="deposit" id="depositBtn">Deposit</button>
+          <button class="withdraw" id="withdrawBtn">Withdrawal</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Төрөл</th>
+              <th>Дүн</th>
+              <th>Balance</th>
+              <th>Current Balance</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      let loggedInUser = null;
+
+      // Login
+      document
+        .getElementById("loginBtn")
+        .addEventListener("click", async () => {
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+
+          const res = await fetch("http://localhost:3000/user/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            loggedInUser = data.user.email; // Login хийсэн email-г ашиглана
+            document.getElementById("loginDiv").classList.add("hidden");
+            document.getElementById("bankDiv").classList.remove("hidden");
+            loadHistory();
+          } else {
+            document.getElementById("errorMsg").textContent =
+              "Invalid email or password";
+          }
+        });
+
+      // Load history table
+      async function loadHistory() {
+        const res = await fetch(
+          `http://localhost:3000/bank/history/${loggedInUser}`,
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById("tbody");
+        tbody.innerHTML = "";
+        data.forEach((row) => {
+          tbody.innerHTML += `<tr>
+          <td>${row.type}</td>
+          <td>${row.amount}</td>
+          <td>${row.balance}</td>
+          <td>${row.currentBalance}</td>
+        </tr>`;
+        });
+      }
+
+      // Deposit
+      document
+        .getElementById("depositBtn")
+        .addEventListener("click", async () => {
+          const amount = prompt("Deposit amount?");
+          if (!amount) return;
+          await fetch(`http://localhost:3000/bank/deposit/${loggedInUser}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount }),
+          });
+          loadHistory();
+        });
+
+      // Withdraw
+      document
+        .getElementById("withdrawBtn")
+        .addEventListener("click", async () => {
+          const amount = prompt("Withdrawal amount?");
+          if (!amount) return;
+          const res = await fetch(
+            `http://localhost:3000/bank/withdraw/${loggedInUser}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ amount }),
+            },
+          );
+          if (!res.ok) alert("Insufficient funds!");
+          loadHistory();
+        });
+    </script>
+  </body>
+</html>

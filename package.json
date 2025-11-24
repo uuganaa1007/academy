@@ -1,0 +1,28 @@
+{
+  "name": "erxes-academy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Enkhtuvshin0513/academy-backend-.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Enkhtuvshin0513/academy-backend-/issues"
+  },
+  "homepage": "https://github.com/Enkhtuvshin0513/academy-backend-#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "inquirer": "^12.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  }
+}

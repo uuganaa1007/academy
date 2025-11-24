@@ -1,0 +1,16 @@
+{
+  "admin": [
+    {
+      "type": "deposit",
+      "amount": 4000,
+      "balance": 4000,
+      "currentBalance": 4000
+    },
+    {
+      "type": "deposit",
+      "amount": 50000,
+      "balance": 54000,
+      "currentBalance": 50000
+    }
+  ]
+}
