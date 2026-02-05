@@ -4,6 +4,9 @@ export const useAddMovie = () => {
   const { mutate } = useMutation({
     mutationFn: (title: string) => {
       return fetch(`http://localhost:3001/movie/addMovie`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
         method: "POST",
         body: JSON.stringify({ title }),
       });
